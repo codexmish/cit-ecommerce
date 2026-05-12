@@ -58,7 +58,11 @@ const signUp = async (req, res) => {
       otpExpiry: Date.now() + 5 * 60 * 1000,
     });
 
-    otpMailSender(email, "verify your OTP", OTPMailTemp(otp));
+    otpMailSender({
+      email,
+      subject: "verify your OTP",
+      template: OTPMailTemp(otp),
+    });
 
     res.status(200).send({
       success: true,
