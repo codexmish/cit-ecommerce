@@ -4,7 +4,7 @@ const {
   generateOTP,
 } = require("../helpers/utils");
 const userSchema = require("../models/userSchema");
-const OTPMailTemp = require("../helpers/emailTemplates");
+const { OTPMailTemp } = require("../helpers/emailTemplates");
 
 const { otpMailSender } = require("../helpers/mailService");
 
@@ -49,6 +49,7 @@ const signUp = async (req, res) => {
     // otp generate
     const otp = generateOTP();
 
+    // user create
     const user = userSchema.create({
       fullname,
       email,
@@ -59,12 +60,10 @@ const signUp = async (req, res) => {
 
     otpMailSender(email, "verify your OTP", OTPMailTemp(otp));
 
-    res
-      .status(200)
-      .send({
-        success: true,
-        message: "SignUp successfull, verify your email",
-      });
+    res.status(200).send({
+      success: true,
+      message: "SignUp successfull, verify your email",
+    });
   } catch (error) {
     console.log(error);
 

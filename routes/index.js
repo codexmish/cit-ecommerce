@@ -7,7 +7,7 @@ route.get("/", (req, res)=>{
 })
 
 
-route.use("/auth", authRoute)
+route.use("/user", authRoute)
 
 
 module.exports = route

@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+require("dotenv").config();
 
 // Create a transporter using SMTP
 const transporter = nodemailer.createTransport({
@@ -6,12 +7,12 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false, // use STARTTLS (upgrade connection to TLS after connecting)
   auth: {
-    user: "",
-    pass: "",
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS,
   },
 });
 
-const otpMailSender = async ({ email, subject, template }) => {
+const otpMailSender = async (email, subject, template) => {
   try {
     await transporter.sendMail({
       from: '"GoCommerce" <team@goCommerce.com>', // sender address
