@@ -8,6 +8,7 @@ const { OTPMailTemp } = require("../helpers/emailTemplates");
 
 const { otpMailSender } = require("../helpers/mailService");
 
+// --------signup controller
 const signUp = async (req, res) => {
   const { fullname, email, password } = req.body;
   try {
@@ -77,4 +78,53 @@ const signUp = async (req, res) => {
   }
 };
 
-module.exports = { signUp };
+// ---------verify otp controller
+const verifyOtp = async (req, res) => {
+  const { email, otp } = req.body;
+
+  try {
+    // checking userdata and update
+    const userData = userSchema.findOneAndUpdate(
+      {
+        email,
+        otp,
+        otpExpiry: { $gt: Date.now() },
+        isVeified: false,
+      },
+      {
+        $set: {
+          isVeified: true,
+          otp: null,
+          otpExpiry: null,
+        },
+      },
+      {
+        returnDocument: "after",
+      },
+    );
+
+    // checking if userdata not found
+    if (!userData)
+      return res
+        .status(400)
+        .send({ success: false, message: "Invalid Requres" });
+
+    // checking otp
+    if (userData.otp !== otp)
+      return res.status(400).send({ success: false, message: "Invalid OTP" });
+
+    res
+      .status(200)
+      .send({ success: true, message: "otp verified successfully" });
+
+    // res.redirect("/login")
+  } catch (error) {
+    console.log(error);
+
+    return res
+      .status(400)
+      .send({ success: false, message: "Inteernal Server Error" });
+  }
+};
+
+module.exports = { signUp, verifyOtp };
