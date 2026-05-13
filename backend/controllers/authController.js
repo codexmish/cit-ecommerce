@@ -70,8 +70,6 @@ const signUp = async (req, res) => {
       message: "SignUp successfull, verify your email",
     });
   } catch (error) {
-    console.log(error);
-
     return res
       .status(400)
       .send({ success: false, message: "Inteernal Server Error" });
@@ -84,16 +82,16 @@ const verifyOtp = async (req, res) => {
 
   try {
     // checking userdata and update
-    const userData = userSchema.findOneAndUpdate(
+    const userData = await userSchema.findOneAndUpdate(
       {
         email,
         otp,
         otpExpiry: { $gt: Date.now() },
-        isVeified: false,
+        isVerified: false,
       },
       {
         $set: {
-          isVeified: true,
+          isVerified: true,
           otp: null,
           otpExpiry: null,
         },
@@ -107,11 +105,7 @@ const verifyOtp = async (req, res) => {
     if (!userData)
       return res
         .status(400)
-        .send({ success: false, message: "Invalid Requres" });
-
-    // checking otp
-    if (userData.otp !== otp)
-      return res.status(400).send({ success: false, message: "Invalid OTP" });
+        .send({ success: false, message: "Invalid Request" });
 
     res
       .status(200)
@@ -119,8 +113,6 @@ const verifyOtp = async (req, res) => {
 
     // res.redirect("/login")
   } catch (error) {
-    console.log(error);
-
     return res
       .status(400)
       .send({ success: false, message: "Inteernal Server Error" });
