@@ -2,6 +2,8 @@ const {
   isValidateEmail,
   isValidatePassword,
   generateOTP,
+  generatAccessToken,
+  generatRefreshToken,
 } = require("../helpers/utils");
 const userSchema = require("../models/userSchema");
 const { OTPMailTemp } = require("../helpers/emailTemplates");
@@ -157,6 +159,13 @@ const resendOtp = async (req, res) => {
   }
 };
 
+// ---------cookie config
+const cookie_config = {
+  httpOnly: false, // Not accessible by client-side JS
+  secure: false, // Only sent over HTTPS
+  // sameSite: 'Strict' // Only send for same-site requests
+};
+
 // ----------sign in controller
 const signIn = async (req, res) => {
   const { email, password } = req.body;
@@ -179,10 +188,16 @@ const signIn = async (req, res) => {
       return res.status(400).send({ success: false, message: "Invalid pass" });
     }
 
-    res.status(200).send({ success: true, message: "login successfully" });
-  } catch (error) {
-    console.log(error);
+    // -----generate jwt token
+    const accessToken = generatAccessToken(userData);
+    const refreshToken = generatRefreshToken(userData);
 
+    res
+      .status(200)
+      .cookie("acc_tkn", accessToken, cookie_config)
+      .cookie("ref_tkn", refreshToken, cookie_config)
+      .send({ success: true, message: "login successfully" });
+  } catch (error) {
     return res
       .status(400)
       .send({ success: false, message: "Inteernal Server Error" });
