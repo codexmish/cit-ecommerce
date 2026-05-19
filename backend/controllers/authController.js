@@ -157,4 +157,36 @@ const resendOtp = async (req, res) => {
   }
 };
 
-module.exports = { signUp, verifyOtp, resendOtp };
+// ----------sign in controller
+const signIn = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const userData = await userSchema.findOne({ email }).select("+password");
+    if (!userData) {
+      return res.status(400).send({ success: false, message: "no user found" });
+    }
+
+    if (userData.isVerified === false) {
+      return res
+        .status(400)
+        .send({ success: false, message: "user not verified" });
+    }
+
+    const matchPassword = await userData.comparePassword(password);
+
+    if (!matchPassword) {
+      return res.status(400).send({ success: false, message: "Invalid pass" });
+    }
+
+    res.status(200).send({ success: true, message: "login successfully" });
+  } catch (error) {
+    console.log(error);
+
+    return res
+      .status(400)
+      .send({ success: false, message: "Inteernal Server Error" });
+  }
+};
+
+module.exports = { signUp, verifyOtp, resendOtp, signIn };
