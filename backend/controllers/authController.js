@@ -59,6 +59,7 @@ const signUp = async (req, res) => {
       otpExpiry: Date.now() + 5 * 60 * 1000,
     });
 
+    // otp mail send
     otpMailSender({
       email,
       subject: "verify your OTP",
@@ -119,4 +120,41 @@ const verifyOtp = async (req, res) => {
   }
 };
 
-module.exports = { signUp, verifyOtp };
+// ---------resend otp controller
+const resendOtp = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const userData = await userSchema.findOne({ email, isVerified: false });
+
+    if (!userData)
+      return res
+        .status(400)
+        .send({ success: false, message: "Invalid Request" });
+
+    // otp generate
+    const otp = generateOTP();
+
+    userData.otp = otp;
+    userData.otpExpiry = Date.now() + 5 * 60 * 1000;
+    await userData.save();
+
+    // otp mail send
+    otpMailSender({
+      email,
+      subject: "verify your OTP",
+      template: OTPMailTemp(otp),
+    });
+
+    res.status(200).send({
+      success: true,
+      message: "New OTP sent on your email",
+    });
+  } catch (error) {
+    return res
+      .status(400)
+      .send({ success: false, message: "Inteernal Server Error" });
+  }
+};
+
+module.exports = { signUp, verifyOtp, resendOtp };
