@@ -204,4 +204,23 @@ const signIn = async (req, res) => {
   }
 };
 
-module.exports = { signUp, verifyOtp, resendOtp, signIn };
+// ---------profile controller
+const getProfile = async (req, res) => {
+  try {
+    console.log(req.user);
+
+    const profileData = await userSchema.findOne({ _id: req.user._id });
+    if (!profileData)
+      return res
+        .status(400)
+        .send({ success: false, message: "invalid request" });
+
+    return res.status(200).send({ success: true, message: profileData });
+  } catch (error) {
+    return res
+      .status(400)
+      .send({ success: false, message: "Inteernal Server Error" });
+  }
+};
+
+module.exports = { signUp, verifyOtp, resendOtp, signIn, getProfile };
