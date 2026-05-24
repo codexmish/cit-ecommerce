@@ -4,6 +4,7 @@ const {
   generateOTP,
   generatAccessToken,
   generatRefreshToken,
+  coludinaryUpload,
 } = require("../helpers/utils");
 const userSchema = require("../models/userSchema");
 const { OTPMailTemp } = require("../helpers/emailTemplates");
@@ -89,7 +90,7 @@ const verifyOtp = async (req, res) => {
       {
         email,
         otp,
-        otpExpiry: { $gt: Date.now() },
+        otpExpiry: { $gt: new Date() },
         isVerified: false,
       },
       {
@@ -104,11 +105,14 @@ const verifyOtp = async (req, res) => {
       },
     );
 
+    console.log(userData);
+    
+
     // checking if userdata not found
     if (!userData)
       return res
         .status(400)
-        .send({ success: false, message: "Invalid Request" });
+        .send({ success: false, message: "Invalid Request 4" });
 
     res
       .status(200)
@@ -209,7 +213,10 @@ const getProfile = async (req, res) => {
   try {
     console.log(req.user);
 
-    const profileData = await userSchema.findOne({ _id: req.user._id });
+    const profileData = await userSchema.findOne(
+      { _id: req.user._id },
+      { fullname: 1, email: 1, role: 1, avatar: 1, address: 1 },
+    );
     if (!profileData)
       return res
         .status(400)
@@ -223,4 +230,52 @@ const getProfile = async (req, res) => {
   }
 };
 
-module.exports = { signUp, verifyOtp, resendOtp, signIn, getProfile };
+// --------update profile
+const updateProfile = async (req, res) => {
+  const { fullname, address } = req.body;
+  const avatar = req.file;
+
+  try {
+    // checking user
+    const userData = await userSchema.findOne({ _id: req.user._id });
+    console.log(userData);
+    console.log(avatar);
+    
+    
+
+    if (!userData) {
+      return res.status(400).send({ message: "something went wrong" });
+    }
+
+    // updating fullname
+    if (fullname && fullname.trim()) {
+      userData.fullname = fullname;
+    }
+
+    // updating address
+    if (address && address.trim()) {
+      userData.address = address;
+    }
+
+    // avatar update
+
+    if(avatar){
+      const cloudeRes = coludinaryUpload({mimetype: avatar.mimetype, imgBuffer: avatar.buffer})
+    }
+    console.log(cloudeRes);
+    
+  } catch (error) {
+    return res
+      .status(400)
+      .send({ success: false, message: "Inteernal Server Error" });
+  }
+};
+
+module.exports = {
+  signUp,
+  verifyOtp,
+  resendOtp,
+  signIn,
+  getProfile,
+  updateProfile,
+};
