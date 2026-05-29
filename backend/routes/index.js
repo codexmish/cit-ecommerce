@@ -11,5 +11,3 @@ route.use("/user", authRoute)
 
 
 module.exports = route
-
-// 
